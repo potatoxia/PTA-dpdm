@@ -85,7 +85,7 @@ if __name__ == '__main__':
 	
 	sampler = PTSampler(ndim,PTA.get_lnlikelihood,PTA.get_lnprior,
 				cov = np.diag(np.ones(ndim)*0.25), groups=groups, 
-				outDir='/home/sdb/xuexiao/chains/openBayesian/SearchDPDM/')
+				outDir='/home/sdb/xuexiao/PTAchains/openBayesian/')
 	sampler.sample(x0,10000000,isave=1000)
 
 	

@@ -101,9 +101,9 @@ if __name__ == '__main__':
 	#
 
 	sampler = PTSampler(ndim,PTA.get_lnlikelihood,PTA.get_lnprior,
-				cov = np.diag(np.ones(ndim)*0.25), groups=None, outDir='/home/sdb/xuexiao/chains/FixNoiseBayesian/SearchDPDM/',resume=True)
+				cov = np.diag(np.ones(ndim)*0.25), groups=None, outDir='/home/sdb/xuexiao/PTAchains/FixNoiseBayesian/')
 	x0 = np.hstack([par.sample() for par in PTA.params])
-	sampler.sample(x0,1000000,isave=1000)
+	sampler.sample(x0,10000000,isave=1000)
 
 
 

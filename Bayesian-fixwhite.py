@@ -114,8 +114,8 @@ if __name__ == '__main__':
 
 	sampler = PTSampler(ndim,PTA.get_lnlikelihood,PTA.get_lnprior,
 				cov = np.diag(np.ones(ndim)*0.25), groups=groups, 
-				outDir='/home/sdb/xuexiao/chains/FixWhiteBayesian/SearchDPDM/')
-	sampler.sample(x0,10000000,isave=1000)
+				outDir='/home/sdb/xuexiao/PTAchains/FixWhiteBayesian/')
+	sampler.sample(x0,100000000,isave=1000)
 
 
 
