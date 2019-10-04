@@ -81,36 +81,27 @@ if __name__ == '__main__':
 	PTA = signal_base.PTA(signals)
 	ndim = len(PTA.params)
 	
-	# Get Starting Points
+	# Get Starting Points and constant parameter values.
 	save1 = np.load('noisepars.npy')
 	save2 = np.load('noisepardict.npy')
+	save3 = np.load('dpdmpars-mlh.npy')
+	save4 = np.load('dpdmpardict.npy')
 	Dict = {save2[i]:save1[i] for i in range(len(save1))}
-
-	xs = {par.name:par.sample() for par in PTA.params}
-	for parname in Dict.keys():
-		if parname in xs.keys():
-			xs[parname] = Dict[parname]
+	Dict.update({save4[i]:save3[i] for i in range(len(save3))})
 
 	# Use the best fit noise parameters!
 	PTA.set_default_params(Dict)
 
-	# Set groups
-	N=0
-	groups=[]
-	for n in nparams:	
-		groups.extend([[N,N+1],[N+2,N+3]])
-		groups.extend([range(N,N+n)])
-		N += n
-	groups.extend([range(ndim)])
 
-
-
+	# Set starting points at the already-known best fit points!
+	xs = {par.name:par.sample() for par in PTA.params}
+	for parname in Dict.keys():
+		if parname in xs.keys():
+			xs[parname] = Dict[parname]
 	x0 = np.hstack([xs[key] for key in sorted(xs.keys())])
-	N=0
-	for n in nparams:
-		x0[N+4]=0
-		N += n
-	#
+
+	# set groups
+        groups = [range(ndim),range(ndim-5,ndim)]
 
 	sampler = PTSampler(ndim,PTA.get_lnlikelihood,PTA.get_lnprior,
 				cov = np.diag(np.ones(ndim)*0.25), groups=groups, 

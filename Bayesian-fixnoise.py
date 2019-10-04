@@ -98,11 +98,11 @@ if __name__ == '__main__':
 	# Use the best fit noise parameters!
 	PTA.set_default_params(Dict)
 
-	#
+	x0 = np.hstack([par.sample() for par in PTA.params])
+
 
 	sampler = PTSampler(ndim,PTA.get_lnlikelihood,PTA.get_lnprior,
 				cov = np.diag(np.ones(ndim)*0.25), groups=None, outDir='/home/sdb/xuexiao/PTAchains/FixNoiseBayesian/')
-	x0 = np.hstack([par.sample() for par in PTA.params])
 	sampler.sample(x0,10000000,isave=1000)
 
 
