@@ -10,6 +10,7 @@ from enterprise.signals import gp_signals
 from enterprise.signals import deterministic_signals
 from enterprise_extensions import models
 from enterprise_extensions import DPDM
+from enterprise.signals import selections
 
 
 import numpy as np
@@ -34,10 +35,6 @@ xuexiao@mail.itp.ac.cn
 
 
 
-
-
-	# End of the function.
-#====================================================
 if __name__ == '__main__':
 
 
@@ -59,19 +56,40 @@ if __name__ == '__main__':
 		psrs.append(psr)
 
 
-
-
-
+	save1 = np.load('noisepars.npy')
+	save2 = np.load('noisepardict.npy')
+	save3 = np.load('dpdmpars-mlh.npy')
+	save4 = np.load('dpdmpardict.npy')
+	Dict = {save2[i]:save1[i] for i in range(len(save1))}
+	Dict.update({save4[i]:save3[i] for i in range(len(save3))})
 
 	# The Big Model
+	# dm noise
+	log10_A_dm = parameter.Constant()
+	gamma_dm = parameter.Constant()
+	pl_dm = utils.powerlaw(log10_A=log10_A_dm, gamma=gamma_dm)
+	dm_basis = utils.createfourierdesignmatrix_dm(nmodes=50,
+							Tspan=None)
+	dmn = gp_signals.BasisGP(pl_dm, dm_basis, name='dm_gp',
+					coefficients=False)
+	# spin noise
+	log10_A = parameter.Constant()
+	gamma = parameter.Constant()
+	pl = utils.powerlaw(log10_A=log10_A, gamma=gamma)
+	selection = selections.Selection(selections.no_selection)
+	spn = gp_signals.FourierBasisGP(pl, components=50, Tspan=None,
+					coefficients=False, selection=selection,
+					modes=None)
+		
+
 
 	dp = DPDM.dpdm_block(type_ = 'Bayes')
 	tm = gp_signals.TimingModel()
+	eph = deterministic_signals.PhysicalEphemerisSignal(use_epoch_toas=True)
 	wnb = models.white_noise_block(vary=False)
-	dmn = models.dm_noise_block(components=50)                         
-	spn = models.red_noise_block(components=50)  
 
-	model = tm + dp + wnb + dmn + spn
+
+	model = tm + dp + wnb + dmn + spn + eph
 	nparams = [] # Get the number of parameters of each pulsar
 	signals = []
 	for psr in psrs:
@@ -79,19 +97,10 @@ if __name__ == '__main__':
 		nparams.append(len(signal.params)-5) # Subtracting common DPDM params
 		signals.append(signal)
 	PTA = signal_base.PTA(signals)
-	ndim = len(PTA.params)
-	
-	# Get Starting Points and constant parameter values.
-	save1 = np.load('noisepars.npy')
-	save2 = np.load('noisepardict.npy')
-	save3 = np.load('dpdmpars-maxposprob.npy')
-	save4 = np.load('dpdmpardict.npy')
-	Dict = {save2[i]:save1[i] for i in range(len(save2))}
-	Dict.update({save4[i]:save3[i] for i in range(len(save4))})
+	ndim = len(PTA.params) + 5
 
 	# Use the best fit noise parameters!
 	PTA.set_default_params(Dict)
-
 
 	# Set starting points at the already-known best fit points!
 	xs = {par.name:par.sample() for par in PTA.params}
@@ -100,13 +109,9 @@ if __name__ == '__main__':
 			xs[parname] = Dict[parname]
 	x0 = np.hstack([xs[key] for key in sorted(xs.keys())])
 
-	# set groups
-        groups = [range(ndim),range(ndim-5,ndim)]
-
 	sampler = PTSampler(ndim,PTA.get_lnlikelihood,PTA.get_lnprior,
-				cov = np.diag(np.ones(ndim)*0.25), groups=groups, 
-				outDir='/home/sdb/xuexiao/PTAchains/FixWhiteBayesian/')
-	sampler.sample(x0,100000000,isave=1000)
+				cov = np.diag(np.ones(ndim)*0.25), groups=None, outDir='/home/sdb/xuexiao/EPHPTAchains/FixNoiseBayesian/')
+	sampler.sample(x0,10000000,isave=1000)
 
 
 
