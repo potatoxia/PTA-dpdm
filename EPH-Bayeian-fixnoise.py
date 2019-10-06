@@ -58,10 +58,10 @@ if __name__ == '__main__':
 
 	save1 = np.load('noisepars.npy')
 	save2 = np.load('noisepardict.npy')
-	save3 = np.load('dpdmpars-mlh.npy')
+	save3 = np.load('dpdmpars-maxposprob.npy')
 	save4 = np.load('dpdmpardict.npy')
-	Dict = {save2[i]:save1[i] for i in range(len(save1))}
-	Dict.update({save4[i]:save3[i] for i in range(len(save3))})
+	Dict = {save2[i]:save1[i] for i in range(len(save2))}
+	Dict.update({save4[i]:save3[i] for i in range(len(save4))})
 
 	# The Big Model
 	# dm noise
